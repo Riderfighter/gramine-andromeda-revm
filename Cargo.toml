@@ -12,6 +12,9 @@ futures = "0.3"
 suave-andromeda-revm = { git = "https://github.com/flashbots/suave-andromeda-revm.git", branch = "main" }
 clap = { version = "4.4.11", features = ["derive"] }
 revm = { git = "https://github.com/flashbots/revm.git", branch = "extensible-precompiles" }
+surf = { version = "2.3.2" }
+qrcode-generator = { version = "4.1.9" }
+
 
 # Misc
 eyre = "0.6.8"
