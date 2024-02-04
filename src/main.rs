@@ -16,9 +16,6 @@ use revm::primitives::{Address,Env,Output,ExecutionResult};
 use revm::precompile::{Precompile};
 use std::collections::HashMap;
 use ethers_core::abi::{decode,ParamType};
-use resvg::{usvg::{self,TreePostProc,TreeParsing},tiny_skia};
-use fontdb;
-
 
 pub fn create_csr(pkey: &PKey<pkey::Private>) -> Result<X509Req> {
     //
@@ -93,92 +90,59 @@ async fn main() {
  	warp::reply::html(r###"
         <!DOCTYPE html><html><head><title>Kettle</title>
         <meta property="fc:frame" content="vNext">
-        <meta property="fc:frame:image" content="https://173-230-135-104-00002.k37713.xyz:5001/image.png">
-        <meta property="og:image" content="https://173-230-135-104-00002.k37713.xyz:5001/image.png">
+        <meta property="fc:frame:image" content="https://www.star-facts.com/wp-content/uploads/2020/08/Rigil-Kentaurus.webp">
+        <meta property="og:image" content="https://www.star-facts.com/wp-content/uploads/2020/08/Rigil-Kentaurus.webp">
         <meta property="fc:frame:button:1" content="Refresh">
         <meta property="fc:frame:post_url" content="https://173-230-135-104-00002.k37713.xyz:5001/post">
         </head><body>
-       <img width=200 src="https://173-230-135-104-00002.k37713.xyz:5001/image.png" /><br>
+       <img width=200 src="https://www.star-facts.com/wp-content/uploads/2020/08/Rigil-Kentaurus.webp" /><br>
        <input type="button" value="Refresh" onClick="window.location.reload()"><br>
        This page is served by an SGX node. You too can join an SGX node to this network, and serve the same page yourself... including passing the HTTPS security check.
        </body></html>"###)
-    });
-
-    let route_image = warp::path!("image.png").then(move || {
-	let myservice = myservice2.clone();
-	async move {
-	    let cmd = r#"execute {"caller":"0x0000000000000000000000000000000000000000","gas_limit":21000000,"gas_price":"0x0","transact_to":{"Call":"0xa3B3F75f05e8A1A2Ed31C65B6bA2339D7050cAfe"},"value":"0x0","data":"0x7a5b4f59","nonce":0,"chain_id":null,"access_list":[],"gas_priority_fee":null,"blob_hashes":[],"max_fee_per_blob_gas":null}"#;
-	    
-	    let mut service = myservice.lock().await;
-	    let _ = service
-		.execute_command("advance", false)
-		.await;
-	    let res = service
-		.execute_command(cmd, false)
-		.await.unwrap();
-	    let res : ExecutionResult = serde_json::from_str(&res).unwrap();
-	    let output = res.output().unwrap();
-
-	    let x = decode(&[ParamType::Tuple(vec![
-		ParamType::Uint(256),
-		ParamType::Uint(256),
-		ParamType::FixedBytes(32)])],output).unwrap();
-	    let x = x[0].clone().into_tuple().unwrap();
-	    let blockheight = x[0].clone().into_uint().unwrap();
-	    let timestamp = x[1].clone().into_uint().unwrap();
-	    let _blockhash = x[2].clone().into_fixed_bytes().unwrap();
-
-	    let s = format!(r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
-<rect width="100%" height="100%" fill="#fff2fc"/>
-<text y="20" font-family="Open Sans">
-<tspan x="5" dy="12">SGX Rigil secure metadata viewer</tspan>
-<tspan x="5" dy="12">Height: {:?}</tspan>
-<tspan x="5" dy="12">Timestamp {:?}</tspan>
-</text></svg>"##, blockheight, timestamp);
-	    
-	    let opt = usvg::Options::default();
-	    let mut tree = usvg::Tree::from_str(&s, &opt).unwrap();
-	    let mut fontdb = fontdb::Database::new();
-	    fontdb.load_font_data(include_bytes!("../OpenSans-Regular.ttf").to_vec());
-	    let steps = usvg::PostProcessingSteps {
-		// `resvg` cannot render text as is. We have to convert it into paths first.
-		convert_text_into_paths: true,
-	    };
-	    tree.postprocess(steps, &fontdb);
-	    let pixmap_size = tree.size.to_int_size();
-	    let mut pixmap = tiny_skia::Pixmap::new(pixmap_size.width(),
-						    pixmap_size.height()).unwrap();
-	    resvg::render(&tree, tiny_skia::Transform::default(), &mut pixmap.as_mut());
-   	    let s = pixmap.encode_png().unwrap();
-	    Response::builder()
-		.header("cache-control","no-cache")
-		.header("Content-Type","image/png")
-		.body(s)
-	}
     });
 
     use std::time::SystemTime;
     // POST /button
     let route_post = warp::path!("post")
     //	.and(warp::body::json()).map(|obj: HashMap<String, serde_json::Value>| {
-	.map(|| {
-	    let t = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)
-		.unwrap().as_secs();
- 	    warp::reply::html(format!(r###"
+	.then(move || {
+	    let myservice = myservice2.clone();
+	    async move {
+		let cmd = r#"execute {"caller":"0x0000000000000000000000000000000000000000","gas_limit":21000000,"gas_price":"0x0","transact_to":{"Call":"0xa3B3F75f05e8A1A2Ed31C65B6bA2339D7050cAfe"},"value":"0x0","data":"0x7a5b4f59","nonce":0,"chain_id":null,"access_list":[],"gas_priority_fee":null,"blob_hashes":[],"max_fee_per_blob_gas":null}"#;
+		
+		let mut service = myservice.lock().await;
+		let _ = service
+		    .execute_command("advance", false)
+		.await;
+		let res = service
+		    .execute_command(cmd, false)
+		    .await.unwrap();
+		let res : ExecutionResult = serde_json::from_str(&res).unwrap();
+		let output = res.output().unwrap();
+		
+		let x = decode(&[ParamType::Tuple(vec![
+		    ParamType::Uint(256),
+		    ParamType::Uint(256),
+		    ParamType::FixedBytes(32)])],output).unwrap();
+		let x = x[0].clone().into_tuple().unwrap();
+		let blockheight = x[0].clone().into_uint().unwrap();
+		let timestamp = x[1].clone().into_uint().unwrap();
+		let _blockhash = x[2].clone().into_fixed_bytes().unwrap();
+		
+ 		warp::reply::html(format!(r###"
         <!DOCTYPE html><html><head><title>Kettle</title>
         <meta property="fc:frame" content="vNext">
-        <meta property="fc:frame:image" content="https://173-230-135-104-00002.k37713.xyz:5001/image.png?{}">
-        <meta property="og:image" content="https://173-230-135-104-00002.k37713.xyz:5001/image.png?{}">
-        <meta property="fc:frame:button:1" content="Refresh (again)">
-        <meta property="fc:frame:button:2" content="Refresh (again)">
-        <meta property="fc:frame:button:3" content="Refresh (again)">
+        <meta property="fc:frame:image" content="https://www.star-facts.com/wp-content/uploads/2020/08/Rigil-Kentaurus.webp">
+        <meta property="og:image" content="https://www.star-facts.com/wp-content/uploads/2020/08/Rigil-Kentaurus.webp">
+        <meta property="fc:frame:button:1" content="Height: {}">
+        <meta property="fc:frame:button:2" content="Time: {}">
+        <meta property="fc:frame:button:3" content="Refresh">
         <meta property="fc:frame:post_url" content="https://173-230-135-104-00002.k37713.xyz:5001/post">
-        </head></html>"###, t,t))
+        </head></html>"###, blockheight, timestamp))
+	    }
 	});
 
-    let route_gets = warp::any().and(route_index
-				     .or(route_image));
-
+    let route_gets = warp::any().and(route_index);
     let routes = route_gets.or(route_post);
 
     let shared_state_for_reader = pkey_state.clone();
@@ -192,16 +156,6 @@ async fn main() {
 	    .key(pkey)
 	    .run(([0, 0, 0, 0], 5001)).await
     });
-
-    /*
-    Usage plan:
-    1. If not bootstrapped, create a key and certificate request
-
-      Out of band, satisfy the certificate request
-      Post the certificate request on chain
-
-
-    */
 
     // Thread 2: Read local commands on stdin
     let mut reader = tokio::io::BufReader::new(tokio::io::stdin());
