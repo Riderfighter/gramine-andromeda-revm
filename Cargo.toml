@@ -24,6 +24,8 @@ openssl = "0.10.63"
 warp = { version = "0.3.6", features = ["tls"] }
 hex = "0.4.3"
 svg = "0.15.0"
+resvg = "0.38.0"
+fontdb = "0.16.0"
 
 [patch."https://github.com/bluealloy/revm"]
 revm = { git = "https://github.com/flashbots/revm.git", branch = "extensible-precompiles" }
